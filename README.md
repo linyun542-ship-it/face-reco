@@ -19,9 +19,32 @@ pip install -U pip
 pip install -e .
 ```
 
-Requires Python 3.10+, PyTorch, and ~2GB disk for aligned CelebA images (more with the zip).
+Requires Python 3.10+, PyTorch, and ~2–3 GB disk for aligned CelebA (zip + extract).
 
-## Data
+## NEU Explorer (full training)
+
+Full CelebA training is meant for **Explorer Slurm GPU**, not the Cursor VM and not a login-node self-hosted worker.
+
+- **Open OnDemand** is only a browser login UI — it does **not** download CelebA for you.
+- Put data on **cluster scratch** (`/scratch/$USER/...`), then submit GPU jobs with `sbatch`.
+
+```bash
+ssh <you>@login.explorer.northeastern.edu
+export SCRATCH=/scratch/$USER
+cd $SCRATCH/face-reco   # clone this repo here first
+bash scripts/download_celeba_explorer.sh
+python scripts/prepare_splits.py \
+  --data-root $SCRATCH/datasets/celeba \
+  --manifest-dir $SCRATCH/datasets/celeba/manifests
+mkdir -p logs
+sbatch scripts/slurm_train.sh ce
+sbatch scripts/slurm_train.sh arcface
+sbatch scripts/slurm_train.sh triplet
+```
+
+Step-by-step: [`docs/explorer-celeba.md`](docs/explorer-celeba.md).
+
+## Data (local / Cursor smoke)
 
 ```bash
 # Downloads img_align_celeba.zip + identity/partition files via gdown
@@ -31,7 +54,7 @@ python scripts/download_celeba.py --data-root data/celeba
 python scripts/prepare_splits.py --data-root data/celeba --manifest-dir data/celeba/manifests
 ```
 
-If Google Drive rate-limits the zip, place `img_align_celeba.zip`, `identity_CelebA.txt`, and `list_eval_partition.txt` under `data/celeba/` and re-run the download script (it skips existing files) then prepare.
+If Google Drive rate-limits the zip, place `img_align_celeba.zip`, `identity_CelebA.txt`, and `list_eval_partition.txt` under the data root and re-run the download script (it skips existing files) then prepare.
 
 ### Smoke subset (CPU / limited VM)
 
@@ -98,12 +121,15 @@ Smoke results (small identity subset, 1 epoch, CPU) are illustrative only — se
 
 ```
 configs/           # ce, triplet, arcface, smoke
+docs/              # Explorer / scratch download guide
 src/face_reco/     # data, models, losses, train, eval
-scripts/           # download, prepare, train, eval, smoke_run.sh
+scripts/           # download*, prepare, train, eval, smoke_run, slurm_train
 results/smoke/     # copied smoke summaries
 ```
 
 ## Notes
 
-- **No GPU in the reference smoke environment**: full CelebA training is impractical on CPU; use the smoke subset locally and the default configs on a GPU box for resume numbers.
+- **Full training target = NEU Explorer GPU** via `scripts/slurm_train.sh`. Cursor smoke validates the pipeline only.
+- **No GPU in the reference smoke environment**: numbers below resume targets are expected on the 80-identity / 1-epoch subset.
 - Triplet has no native softmax accuracy; we report nearest-centroid accuracy on embeddings plus the same TPR@FPR protocol.
+- Prefer hosting on **GitHub**; if `gh` is not authenticated in the agent environment, push the branch from your laptop (`git remote add` + PR).
