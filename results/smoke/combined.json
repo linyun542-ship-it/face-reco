@@ -1,0 +1,86 @@
+{
+  "ce": {
+    "loss": "ce",
+    "device": "cpu",
+    "num_classes": 80,
+    "best_val_score": 0.275,
+    "epochs": 1,
+    "run_dir": "runs/smoke/ce/20261010T192502Z",
+    "data_meta": {
+      "num_identities": 80,
+      "counts": {
+        "train": 1280,
+        "val": 160,
+        "test": 160
+      },
+      "max_identities": 80,
+      "max_images_per_identity": 20,
+      "image_dir": "data/celeba/img_align_celeba",
+      "seed": 42
+    },
+    "test_accuracy": 0.3,
+    "verification": {
+      "tpr@fpr=0.001": 0.15,
+      "tpr@fpr=0.01": 0.238,
+      "tpr@fpr=0.1": 0.674,
+      "roc_auc": 0.8882095,
+      "num_pairs": 2000.0
+    }
+  },
+  "triplet": {
+    "loss": "triplet",
+    "device": "cpu",
+    "num_classes": 80,
+    "best_val_score": 0.31875,
+    "epochs": 1,
+    "run_dir": "runs/smoke/triplet/20261010T192543Z",
+    "data_meta": {
+      "num_identities": 80,
+      "counts": {
+        "train": 1280,
+        "val": 160,
+        "test": 160
+      },
+      "max_identities": 80,
+      "max_images_per_identity": 20,
+      "image_dir": "data/celeba/img_align_celeba",
+      "seed": 42
+    },
+    "test_knn_accuracy": 0.4875,
+    "verification": {
+      "tpr@fpr=0.001": 0.176,
+      "tpr@fpr=0.01": 0.274,
+      "tpr@fpr=0.1": 0.65,
+      "roc_auc": 0.849769,
+      "num_pairs": 2000.0
+    }
+  },
+  "arcface": {
+    "loss": "arcface",
+    "device": "cpu",
+    "num_classes": 80,
+    "best_val_score": 0.28125,
+    "epochs": 1,
+    "run_dir": "runs/smoke/arcface/20261010T192639Z",
+    "data_meta": {
+      "num_identities": 80,
+      "counts": {
+        "train": 1280,
+        "val": 160,
+        "test": 160
+      },
+      "max_identities": 80,
+      "max_images_per_identity": 20,
+      "image_dir": "data/celeba/img_align_celeba",
+      "seed": 42
+    },
+    "test_accuracy": 0.275,
+    "verification": {
+      "tpr@fpr=0.001": 0.061,
+      "tpr@fpr=0.01": 0.35,
+      "tpr@fpr=0.1": 0.698,
+      "roc_auc": 0.8642985000000001,
+      "num_pairs": 2000.0
+    }
+  }
+}
