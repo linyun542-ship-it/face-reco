@@ -11,8 +11,8 @@ venv/
 .mypy_cache/
 .ruff_cache/
 
-# Data & heavy artifacts
-data/
+# Data & heavy artifacts (repo-root only; do not ignore src/**/data/)
+/data/
 *.zip
 *.pt
 *.pth
