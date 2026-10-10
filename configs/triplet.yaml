@@ -1,0 +1,24 @@
+loss: triplet
+data_root: data/celeba
+manifest_dir: data/celeba/manifests
+image_size: 160
+batch_size: 64
+num_workers: 4
+epochs: 15
+lr: 1.0e-4
+weight_decay: 1.0e-4
+freeze_backbone_epochs: 0
+pretrained: vggface2
+embedding_dim: 512
+triplet_margin: 0.5
+identities_per_batch: 16
+images_per_identity: 4
+seed: 42
+device: auto
+output_dir: runs/triplet
+eval_every: 1
+num_pairs: 10000
+fpr_targets: [0.001, 0.01, 0.1]
+probe_epochs: 5
+max_identities: null
+max_images_per_identity: null

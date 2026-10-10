@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Data & heavy artifacts
+data/
+*.zip
+*.pt
+*.pth
+runs/
+wandb/
+
+# Keep smoke metric JSON examples if committed under results/smoke
+results/**
+!results/
+!results/smoke/
+!results/smoke/**/*.json
+!results/.gitkeep

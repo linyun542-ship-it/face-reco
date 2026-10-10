@@ -1,0 +1,14 @@
+# Overlay for CPU / limited-resource smoke runs.
+# Usage: python scripts/train.py --config configs/ce.yaml configs/smoke.yaml
+batch_size: 16
+num_workers: 2
+epochs: 1
+lr: 5.0e-4
+head_lr: 1.0e-3
+freeze_backbone_epochs: 0
+num_pairs: 2000
+max_identities: 80
+max_images_per_identity: 20
+identities_per_batch: 8
+images_per_identity: 2
+manifest_dir: data/celeba/manifests_smoke

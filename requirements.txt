@@ -1,0 +1,9 @@
+torch>=2.1
+torchvision>=0.16
+facenet-pytorch>=2.5.3
+numpy>=1.24
+Pillow>=10.0
+PyYAML>=6.0
+tqdm>=4.66
+gdown>=5.1
+scikit-learn>=1.3
