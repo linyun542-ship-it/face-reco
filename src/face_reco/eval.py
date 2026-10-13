@@ -37,7 +37,19 @@ def load_model_from_checkpoint(ckpt_path: str | Path, device: torch.device):
         model = FaceEmbedder(pretrained=pretrained)
     else:
         raise ValueError(f"Unknown loss in checkpoint: {loss}")
-    model.load_state_dict(ckpt["model"])
+    incompatible = model.load_state_dict(ckpt["model"], strict=False)
+    allowed_extra = {
+        "backbone.logits.weight",
+        "backbone.logits.bias",
+        "embedder.backbone.logits.weight",
+        "embedder.backbone.logits.bias",
+    }
+    unexpected = set(incompatible.unexpected_keys) - allowed_extra
+    if incompatible.missing_keys or unexpected:
+        raise RuntimeError(
+            "Checkpoint does not match model: "
+            f"missing={incompatible.missing_keys}, unexpected={sorted(unexpected)}"
+        )
     model.to(device)
     model.eval()
     return model, ckpt
