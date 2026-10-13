@@ -108,9 +108,10 @@ def tpr_at_fpr(
         mask = fpr <= target
         val = float(tpr[mask].max()) if mask.any() else 0.0
         out[f"tpr@fpr={target:g}"] = val
-    # AUC approximation via trapz on ROC
+    # New NumPy uses trapezoid; older supported releases expose only trapz.
     order = np.argsort(fpr)
-    out["roc_auc"] = float(np.trapz(tpr[order], fpr[order]))
+    integrate = getattr(np, "trapezoid", None) or np.trapz
+    out["roc_auc"] = float(integrate(tpr[order], fpr[order]))
     out["num_pairs"] = float(num_pairs)
     return out
 
