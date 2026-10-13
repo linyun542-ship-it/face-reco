@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import csv
 from pathlib import Path
 from typing import Any
 
@@ -16,6 +17,11 @@ from face_reco.metrics import (
     tpr_at_fpr,
 )
 from face_reco.models import ArcFaceModel, FaceClassifier, FaceEmbedder
+
+
+def _identity_set(csv_path: Path) -> set[int]:
+    with open(csv_path, encoding="utf-8") as f:
+        return {int(row["identity"]) for row in csv.DictReader(f)}
 
 
 def load_model_from_checkpoint(ckpt_path: str | Path, device: torch.device):
@@ -85,25 +91,46 @@ def evaluate(
         num_workers=num_workers,
         shuffle=False,
     )
+    train_ids = _identity_set(manifest_dir / "train.csv")
+    test_ids = _identity_set(manifest_dir / "test.csv")
+    known_test_ids = test_ids.issubset(train_ids)
 
     summary: dict[str, Any] = {
         "checkpoint": str(ckpt_path),
         "loss": loss,
         "epoch": ckpt.get("epoch"),
         "device": str(device),
+        "identity_protocol": {
+            "train_identities": len(train_ids),
+            "test_identities": len(test_ids),
+            "train_test_overlap": len(train_ids & test_ids),
+            "closed_set_applicable": known_test_ids,
+        },
     }
 
     if loss in ("ce", "arcface"):
-        summary["test_accuracy"] = closed_set_accuracy(
-            model,
-            test_loader,
-            device,
-            use_arcface_eval=(loss == "arcface"),
-        )
+        if known_test_ids:
+            summary["test_accuracy"] = closed_set_accuracy(
+                model,
+                test_loader,
+                device,
+                use_arcface_eval=(loss == "arcface"),
+            )
+        else:
+            summary["test_accuracy"] = None
+            summary["test_accuracy_note"] = (
+                "Not applicable: test identities are not all present in training"
+            )
     else:
-        tr_emb, tr_y = extract_embeddings(model, train_loader, device)
-        te_emb, te_y = extract_embeddings(model, test_loader, device)
-        summary["test_knn_accuracy"] = knn_accuracy(tr_emb, tr_y, te_emb, te_y)
+        if known_test_ids:
+            tr_emb, tr_y = extract_embeddings(model, train_loader, device)
+            te_emb, te_y = extract_embeddings(model, test_loader, device)
+            summary["test_knn_accuracy"] = knn_accuracy(tr_emb, tr_y, te_emb, te_y)
+        else:
+            summary["test_knn_accuracy"] = None
+            summary["test_knn_accuracy_note"] = (
+                "Not applicable: test identities are not all present in training"
+            )
 
     emb_model = model.embedder if hasattr(model, "embedder") else model
     te_emb, te_y = extract_embeddings(emb_model, test_loader, device)
