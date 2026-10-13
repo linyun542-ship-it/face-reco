@@ -100,7 +100,7 @@ Checkpoints and `summary.json` land under `runs/<loss>/<timestamp>/`.
 | ArcFace | s=64, m=0.5 |
 | Triplet margin | 0.5 (batch-hard) |
 
-Expect ~91% CE and ~92.5% ArcFace **test accuracy** after a full CelebA GPU run with the default configs (not the smoke overlay).
+The ~91% CE and ~92.5% ArcFace figures are **project goals, not measured full-scale results**. Validate them with completed GPU runs; for interviews, cite actual `summary.json` metrics and describe the evaluation protocol. See the [Explorer guide](docs/explorer-celeba.md) for the persistent GPU environment and eight-hour job limit.
 
 ## Eval
 
