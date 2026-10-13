@@ -26,6 +26,12 @@ def prepare_main(argv: list[str] | None = None) -> None:
     p.add_argument("--max-images-per-identity", type=int, default=None)
     p.add_argument("--min-images-per-identity", type=int, default=2)
     p.add_argument("--seed", type=int, default=42)
+    p.add_argument(
+        "--split-strategy",
+        choices=("official", "stratified"),
+        default="official",
+        help="official=open-set identities; stratified=per-identity 80/10/10",
+    )
     args = p.parse_args(argv)
     prepare_manifests(
         args.data_root,
@@ -34,6 +40,7 @@ def prepare_main(argv: list[str] | None = None) -> None:
         max_images_per_identity=args.max_images_per_identity,
         min_images_per_identity=args.min_images_per_identity,
         seed=args.seed,
+        split_strategy=args.split_strategy,
     )
 
 
