@@ -25,7 +25,14 @@
 set -euo pipefail
 
 LOSS="${1:-ce}"
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+# Slurm executes a copied script from its spool directory. Use the directory
+# where sbatch was invoked so relative project paths still resolve correctly.
+ROOT="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "$0")/.." && pwd)}"
+if [[ ! -f "${ROOT}/pyproject.toml" ]]; then
+  echo "[error] ${ROOT} is not the face-reco project root"
+  echo "Submit from the repository root: cd /scratch/$USER/face-reco"
+  exit 1
+fi
 cd "$ROOT"
 mkdir -p logs runs
 
