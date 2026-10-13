@@ -60,7 +60,11 @@ def sample_pairs(
     ids_multi = [i for i, idxs in by_id.items() if len(idxs) >= 2]
     all_ids = list(by_id.keys())
     if not ids_multi or len(all_ids) < 2:
-        raise ValueError("Not enough identities to sample verification pairs")
+        return (
+            np.array([], dtype=np.int64),
+            np.array([], dtype=np.int64),
+            np.array([], dtype=np.int64),
+        )
 
     n_pos = num_pairs // 2
     n_neg = num_pairs - n_pos
@@ -90,6 +94,11 @@ def tpr_at_fpr(
     seed: int = 42,
 ) -> dict[str, float]:
     a, b, y_true = sample_pairs(labels, num_pairs=num_pairs, seed=seed)
+    if y_true.size == 0:
+        out = {f"tpr@fpr={target:g}": 0.0 for target in fpr_targets}
+        out["roc_auc"] = 0.0
+        out["num_pairs"] = 0.0
+        return out
     # Cosine similarity for L2-normalized embeddings == dot product
     scores = np.sum(embeddings[a] * embeddings[b], axis=1)
     fpr, tpr, _ = roc_curve(y_true, scores)
