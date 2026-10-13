@@ -50,8 +50,14 @@ Step-by-step: [`docs/explorer-celeba.md`](docs/explorer-celeba.md).
 # Downloads img_align_celeba.zip + identity/partition files via gdown
 python scripts/download_celeba.py --data-root data/celeba
 
-# Full manifests (all identities)
+# Official identity-disjoint manifests for open-set verification
 python scripts/prepare_splits.py --data-root data/celeba --manifest-dir data/celeba/manifests
+
+# Per-identity split for closed-set classification accuracy
+python scripts/prepare_splits.py \
+  --data-root data/celeba \
+  --manifest-dir data/celeba/manifests_closed_set \
+  --split-strategy stratified
 ```
 
 If Google Drive rate-limits the zip, place `img_align_celeba.zip`, `identity_CelebA.txt`, and `list_eval_partition.txt` under the data root and re-run the download script (it skips existing files) then prepare.
@@ -100,7 +106,7 @@ Checkpoints and `summary.json` land under `runs/<loss>/<timestamp>/`.
 | ArcFace | s=64, m=0.5 |
 | Triplet margin | 0.5 (batch-hard) |
 
-The ~91% CE and ~92.5% ArcFace figures are **project goals, not measured full-scale results**. Validate them with completed GPU runs; for interviews, cite actual `summary.json` metrics and describe the evaluation protocol. See the [Explorer guide](docs/explorer-celeba.md) for the persistent GPU environment and eight-hour job limit.
+CelebA's official split is identity-disjoint, so closed-set test accuracy is not applicable there; use ROC AUC and TPR@FPR. The ~91% CE and ~92.5% ArcFace figures are **unverified project goals** for a separate per-identity closed-set split. For interviews, cite actual metrics and name the split protocol. See the [Explorer guide](docs/explorer-celeba.md) for the persistent GPU environment and eight-hour job limit.
 
 ## Eval
 
