@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import csv
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -24,6 +25,11 @@ from face_reco.metrics import (
 from face_reco.models import ArcFaceModel, FaceClassifier, FaceEmbedder
 
 
+def _identity_set(csv_path: Path) -> set[int]:
+    with open(csv_path, encoding="utf-8") as f:
+        return {int(row["identity"]) for row in csv.DictReader(f)}
+
+
 def _append_jsonl(path: Path, record: dict[str, Any]) -> None:
     with open(path, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
@@ -42,6 +48,11 @@ def train_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
     test_csv = manifest_dir / "test.csv"
     meta = json.loads((manifest_dir / "meta.json").read_text(encoding="utf-8"))
     num_classes = int(meta["num_identities"])
+    train_ids = _identity_set(train_csv)
+    val_ids = _identity_set(val_csv)
+    test_ids = _identity_set(test_csv)
+    known_val_ids = val_ids.issubset(train_ids)
+    known_test_ids = test_ids.issubset(train_ids)
 
     run_dir = ensure_dir(
         Path(cfg.get("output_dir", f"runs/{loss_name}"))
@@ -169,7 +180,7 @@ def train_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
         }
 
         # Validation
-        if loss_name in ("ce", "arcface"):
+        if loss_name in ("ce", "arcface") and known_val_ids:
             val_acc = closed_set_accuracy(
                 model,
                 val_loader,
@@ -178,7 +189,7 @@ def train_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
             )
             record["val_accuracy"] = val_acc
             score = val_acc
-        else:
+        elif loss_name == "triplet" and known_val_ids:
             train_eval_loader = make_loader(
                 train_csv, batch_size, image_size, False, num_workers, shuffle=False
             )
@@ -189,6 +200,18 @@ def train_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
             val_acc = knn_accuracy(tr_emb, tr_y, va_emb, va_y)
             record["val_knn_accuracy"] = val_acc
             score = val_acc
+        else:
+            emb_model = model.embedder if hasattr(model, "embedder") else model
+            va_emb, va_y = extract_embeddings(emb_model, val_loader, device)
+            val_verification = tpr_at_fpr(
+                va_emb,
+                va_y,
+                fpr_targets=cfg.get("fpr_targets", [0.001, 0.01, 0.1]),
+                num_pairs=int(cfg.get("val_num_pairs", 2000)),
+                seed=int(cfg.get("seed", 42)),
+            )
+            record["val_verification"] = val_verification
+            score = float(val_verification["roc_auc"])
 
         history.append(record)
         _append_jsonl(metrics_path, record)
@@ -221,23 +244,42 @@ def train_from_config(cfg: dict[str, Any]) -> dict[str, Any]:
         "epochs": epochs,
         "run_dir": str(run_dir),
         "data_meta": meta,
+        "identity_protocol": {
+            "train_identities": len(train_ids),
+            "val_identities": len(val_ids),
+            "test_identities": len(test_ids),
+            "train_val_overlap": len(train_ids & val_ids),
+            "train_test_overlap": len(train_ids & test_ids),
+        },
     }
 
     if loss_name in ("ce", "arcface"):
-        test_acc = closed_set_accuracy(
-            model,
-            test_loader,
-            device,
-            use_arcface_eval=(loss_name == "arcface"),
-        )
-        summary["test_accuracy"] = test_acc
+        if known_test_ids:
+            test_acc = closed_set_accuracy(
+                model,
+                test_loader,
+                device,
+                use_arcface_eval=(loss_name == "arcface"),
+            )
+            summary["test_accuracy"] = test_acc
+        else:
+            summary["test_accuracy"] = None
+            summary["test_accuracy_note"] = (
+                "Not applicable: test identities are not all present in training"
+            )
     else:
-        train_eval_loader = make_loader(
-            train_csv, batch_size, image_size, False, num_workers, shuffle=False
-        )
-        tr_emb, tr_y = extract_embeddings(model, train_eval_loader, device)
-        te_emb, te_y = extract_embeddings(model, test_loader, device)
-        summary["test_knn_accuracy"] = knn_accuracy(tr_emb, tr_y, te_emb, te_y)
+        if known_test_ids:
+            train_eval_loader = make_loader(
+                train_csv, batch_size, image_size, False, num_workers, shuffle=False
+            )
+            tr_emb, tr_y = extract_embeddings(model, train_eval_loader, device)
+            te_emb, te_y = extract_embeddings(model, test_loader, device)
+            summary["test_knn_accuracy"] = knn_accuracy(tr_emb, tr_y, te_emb, te_y)
+        else:
+            summary["test_knn_accuracy"] = None
+            summary["test_knn_accuracy_note"] = (
+                "Not applicable: test identities are not all present in training"
+            )
 
     # Verification metrics on test embeddings
     emb_model = model.embedder if hasattr(model, "embedder") else model
