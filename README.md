@@ -52,10 +52,13 @@ The output is cosine similarity, **not a probability**. No same-person decision 
 
 ## Pretrained baseline (next experiment)
 
-Run on an allocated GPU node using the same environment and manifest as the completed runs:
+Submit from the Explorer project directory using the same environment and manifests as the completed runs (create logs before submission):
 
 ```bash
-.venv-gpu/bin/python scripts/eval_baseline.py --manifest-dir /scratch/$USER/datasets/celeba/manifests --device cuda --output runs/baseline/summary.json
+mkdir -p logs
+sbatch scripts/slurm_baseline.sh
+# Results: runs/baseline/<job-id>/summary.json
+# Logs: logs/slurm-face-reco-baseline-<job-id>.out
 ```
 
 Baseline evaluation is implemented but **no baseline score is reported yet**. First-time pretrained weights may require network access.
