@@ -1,0 +1,37 @@
+{
+  "data_meta": {
+    "num_identities": 10133,
+    "counts": {
+      "train": 162734,
+      "val": 19862,
+      "test": 19959
+    },
+    "max_identities": null,
+    "max_images_per_identity": null,
+    "image_dir": "/scratch/<user>/datasets/celeba/img_align_celeba",
+    "seed": 42
+  },
+  "identity_protocol": {
+    "train_identities": 8156,
+    "val_identities": 980,
+    "test_identities": 997,
+    "train_val_overlap": 0,
+    "train_test_overlap": 0
+  },
+  "loss": "pretrained_baseline",
+  "fine_tuned": false,
+  "seed": 42,
+  "manifest_sha256": {
+    "train": "83c5eb48da474f5dd2091ce9ed6fc0f7478848fc143f330abffa33f715e7393b",
+    "val": "91810ded63e366b98dc33728443296a660028c3031c20442dc5bc2483e967942",
+    "test": "3774ade78cfb9af956b5f80bfd41076ac06d4d79f2e7fb1f25b95e67beb5db1c"
+  },
+  "verification": {
+    "tpr@fpr=0.001": 0.7164,
+    "tpr@fpr=0.01": 0.8732,
+    "tpr@fpr=0.1": 0.9544,
+    "roc_auc": 0.9814683200000001,
+    "num_pairs": 10000.0
+  },
+  "provenance": "Recorded from user-provided Explorer output for job 11058609; metadata agrees with recorded runs. Scratch paths anonymized. This is a curated record, not a byte-for-byte copy of the remote summary."
+}

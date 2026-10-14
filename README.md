@@ -8,9 +8,12 @@ All three completed runs use 15 epochs and 10,000 test pairs. Checkpoints are se
 
 | Training objective | Test ROC AUC | TPR at 0.1% FPR | TPR at 1% FPR | TPR at 10% FPR |
 |---|---:|---:|---:|---:|
+| Pretrained baseline (no fine-tuning) | 0.98146832 | 71.64% | 87.32% | 95.44% |
 | Cross-entropy | 0.98027000 | 40.42% | 74.04% | 95.08% |
 | ArcFace | 0.98277232 | **85.44%** | **91.44%** | 95.84% |
 | Triplet | **0.98290528** | 47.72% | 83.64% | **96.60%** |
+
+**Baseline comparison:** ArcFace improves TPR over the pretrained baseline by **4.12 percentage points at 1% FPR** and **13.80 points at 0.1% FPR**. CE and Triplet underperform the baseline at both stricter operating points; fine-tuning does not uniformly improve verification.
 
 **Takeaway:** ArcFace performs best at the stricter false-acceptance operating points. Triplet has a slightly higher AUC, but the difference from ArcFace is only 0.00013296 and has not been assessed for statistical significance.
 
@@ -37,7 +40,7 @@ sbatch scripts/slurm_train.sh triplet
 Regenerate the recorded result comparison without model dependencies:
 
 ```bash
-python scripts/compare_results.py results/full/ce/*/summary.json results/full/arcface/*/summary.json results/full/triplet/*/summary.json --output results/full/comparison.md
+python scripts/compare_results.py results/full/baseline/*/summary.json results/full/ce/*/summary.json results/full/arcface/*/summary.json results/full/triplet/*/summary.json --output results/full/comparison.md
 ```
 
 ## Two-face demonstration
@@ -50,7 +53,7 @@ python scripts/verify_pair.py --checkpoint runs/arcface/20261013T185644Z/best.pt
 
 The output is cosine similarity, **not a probability**. No same-person decision is produced unless you provide a validation-calibrated `--threshold`. Load only checkpoints you trust. This demo is an engineering addition; real-image inference has not yet been verified in the published experiment.
 
-## Pretrained baseline (next experiment)
+## Pretrained baseline evaluation
 
 Submit from the Explorer project directory using the same environment and manifests as the completed runs (create logs before submission):
 
@@ -61,13 +64,13 @@ sbatch scripts/slurm_baseline.sh
 # Logs: logs/slurm-face-reco-baseline-<job-id>.out
 ```
 
-Baseline evaluation is implemented but **no baseline score is reported yet**. First-time pretrained weights may require network access.
+Baseline evaluation completed successfully in Explorer job 11058609; its measured results are included above. The curated record in results/full/baseline documents its provenance. First-time pretrained weights may require network access.
 
 ## Interpretation and limitations
 
 CE and ArcFace reached their best validation AUC at epoch 2; Triplet at epoch 14. Continuing to reduce training loss did not consistently improve validation performance. Cross-objective loss magnitudes are not comparable.
 
-This is a single-seed comparison of three training recipes, not an isolated causal study of loss functions: freeze schedules and sampling differ. Manifest paths and metadata match, but the archive does not contain manifest hashes or the actual sampled pair lists. Low-FPR estimates have finite-pair uncertainty; bootstrap intervals, multiple seeds, pretraining identity-overlap checks, and a baseline remain future work. Test ROC working points are not calibrated deployment thresholds.
+This is a single-seed comparison of three training recipes, not an isolated causal study of loss functions: freeze schedules and sampling differ. Manifest paths and metadata match, but the archive does not contain manifest hashes or the actual sampled pair lists. Low-FPR estimates have finite-pair uncertainty; bootstrap intervals, multiple seeds, and pretraining identity-overlap checks remain future work. Test ROC working points are not calibrated deployment thresholds.
 
 CelebA data is not distributed here. Review its original dataset terms before use. Checkpoints remain in the author's local backup rather than being published as Git blobs.
 

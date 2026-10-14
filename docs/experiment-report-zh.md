@@ -34,9 +34,9 @@ Triplet 的 AUC 最高，且在 FPR=10% 时 TPR 最高，但其 AUC 相比 ArcFa
 
 ## 结果范围与后续验证
 
-这些结论来自单一随机种子和 CelebA 数据；尚未报告多次运行的均值、置信区间或预训练模型未微调基线。10,000 对测试图片仍不足以稳定刻画极低 FPR 的尾部表现。相同配置路径与 seed 支持实验可比性，但本备份没有 manifest 文件或测试图片对清单，不能仅凭路径确认数据和图片对逐项完全一致。
+这些结论来自单一随机种子和 CelebA 数据；尚未报告多次运行的均值或置信区间。未微调基线已完成，见文末补充。10,000 对测试图片仍不足以稳定刻画极低 FPR 的尾部表现。相同配置路径与 seed 支持实验可比性，但本备份没有 manifest 文件或测试图片对清单，不能仅凭路径确认数据和图片对逐项完全一致。
 
-下一步建议保留预训练基线，增加随机种子重复实验并报告不确定性；若应用以低 FPR 为目标，可另行用验证集相应 TPR 选择 checkpoint。部署阈值应在独立验证集上确定，再在测试集验证；这里报告的 ROC 工作点不是已经校准好的部署阈值。
+下一步建议增加随机种子重复实验并报告不确定性；若应用以低 FPR 为目标，可另行用验证集相应 TPR 选择 checkpoint。部署阈值应在独立验证集上确定，再在测试集验证；这里报告的 ROC 工作点不是已经校准好的部署阈值。
 
 ## 文件与来源
 
@@ -51,3 +51,9 @@ Triplet 的 AUC 最高，且在 FPR=10% 时 TPR 最高，但其 AUC 相比 ArcFa
 ## 可直接用于报告的英文结论
 
 We fine-tuned a VGGFace2-pretrained InceptionResNetV1 on CelebA using cross-entropy, ArcFace, and triplet loss under an identity-disjoint verification protocol. All runs used 15 epochs, and checkpoints were selected by validation ROC AUC. On 10,000 test pairs, ArcFace achieved 91.44% TPR at 1% FPR and 85.44% TPR at 0.1% FPR, outperforming CE and triplet at these operating points. Triplet achieved the highest overall ROC AUC (0.982905), narrowly above ArcFace (0.982772), but this difference was not assessed for statistical significance. These results favor ArcFace for low-false-acceptance verification in this experiment, rather than establishing a universal ranking of the losses.
+
+## 未微调基线补充
+
+Explorer 任务 11058609 成功完成，使用相同规模的测试划分、seed=42 和 10,000 对图片。未微调的 VGGFace2 预训练模型达到 AUC 0.98146832，TPR@FPR=0.1% 为 71.64%，TPR@FPR=1% 为 87.32%，TPR@FPR=10% 为 95.44%。
+
+ArcFace 相比基线在 FPR=1% 时提升 4.12 个百分点，在 FPR=0.1% 时提升 13.80 个百分点。CE 和 Triplet 在这两个工作点均低于未微调基线，因此不能笼统声称所有微调方案都有收益。基线结果强化了 ArcFace 在本次低误认率评估中的优势，但仍需多种子重复实验确认稳定性。基线记录来自用户粘贴的远程结果，三组历史微调任务没有保存 manifest 校验值，不能回溯证明四次运行使用的文件内容完全一致。
