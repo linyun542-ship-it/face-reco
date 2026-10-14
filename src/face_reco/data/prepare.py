@@ -55,14 +55,17 @@ def prepare_manifests(
     max_images_per_identity: int | None = None,
     min_images_per_identity: int = 2,
     seed: int = 42,
+    split_strategy: str = "official",
 ) -> dict[str, Path]:
     """
     Write CSV + JSON manifests for train (0), val (1), test (2).
 
-    Smoke mode: keep only the first `max_identities` identities (by frequency)
-    and optionally cap images per identity.
+    ``official`` preserves CelebA's identity-disjoint evaluation split.
+    ``stratified`` creates a per-identity 80/10/10 closed-set split.
     """
     root = Path(data_root)
+    if split_strategy not in {"official", "stratified"}:
+        raise ValueError("split_strategy must be 'official' or 'stratified'")
     img_dir = root / "img_align_celeba"
     if not img_dir.is_dir():
         raise FileNotFoundError(f"Missing image directory: {img_dir}")
@@ -125,7 +128,8 @@ def prepare_manifests(
     # Subset filters often leave official val/test too thin for verification.
     # Rebuild a stratified 80/10/10 when subsetting or when any split is empty.
     use_rebalance = (
-        max_identities is not None
+        split_strategy == "stratified"
+        or max_identities is not None
         or max_images_per_identity is not None
         or any(counts[n] == 0 for n in split_names.values())
     )
@@ -165,6 +169,11 @@ def prepare_manifests(
             for split_id in split_names
         }
 
+    identity_sets = {
+        name: {int(r["identity"]) for r in rows_by_split[split_id]}
+        for split_id, name in split_names.items()
+    }
+
     for split_id, name in split_names.items():
         split_rows = rows_by_split[split_id]
         counts[name] = len(split_rows)
@@ -184,6 +193,12 @@ def prepare_manifests(
         "max_images_per_identity": max_images_per_identity,
         "image_dir": str(img_dir),
         "seed": seed,
+        "split_strategy": "stratified" if use_rebalance else "official",
+        "identity_counts": {name: len(ids) for name, ids in identity_sets.items()},
+        "identity_overlap": {
+            "train_val": len(identity_sets["train"] & identity_sets["val"]),
+            "train_test": len(identity_sets["train"] & identity_sets["test"]),
+        },
     }
     meta_path = out_dir / "meta.json"
     meta_path.write_text(json.dumps(meta, indent=2), encoding="utf-8")

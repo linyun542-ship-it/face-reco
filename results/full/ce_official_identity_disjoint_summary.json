@@ -1,0 +1,23 @@
+{
+  "checkpoint": "runs/ce/20261013T023248Z/best.pt",
+  "loss": "ce",
+  "epoch": 15,
+  "device": "cuda",
+  "protocol": "CelebA official identity-disjoint split",
+  "identity_counts": {
+    "train": 8156,
+    "validation": 980,
+    "test": 997,
+    "train_validation_overlap": 0,
+    "train_test_overlap": 0
+  },
+  "test_accuracy": null,
+  "test_accuracy_note": "Not applicable because test identities are unseen during training",
+  "verification": {
+    "tpr@fpr=0.001": 0.1114,
+    "tpr@fpr=0.01": 0.4376,
+    "tpr@fpr=0.1": 0.9082,
+    "roc_auc": 0.96134124,
+    "num_pairs": 10000
+  }
+}

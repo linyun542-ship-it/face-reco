@@ -1,0 +1,36 @@
+{
+  "loss": "arcface",
+  "device": "cuda",
+  "num_classes": 10133,
+  "best_val_score": 0.983278,
+  "epochs": 15,
+  "run_dir": "runs/arcface/20261013T185644Z",
+  "data_meta": {
+    "num_identities": 10133,
+    "counts": {
+      "train": 162734,
+      "val": 19862,
+      "test": 19959
+    },
+    "max_identities": null,
+    "max_images_per_identity": null,
+    "image_dir": "/scratch/<user>/datasets/celeba/img_align_celeba",
+    "seed": 42
+  },
+  "identity_protocol": {
+    "train_identities": 8156,
+    "val_identities": 980,
+    "test_identities": 997,
+    "train_val_overlap": 0,
+    "train_test_overlap": 0
+  },
+  "test_accuracy": null,
+  "test_accuracy_note": "Not applicable: test identities are not all present in training",
+  "verification": {
+    "tpr@fpr=0.001": 0.8544,
+    "tpr@fpr=0.01": 0.9144,
+    "tpr@fpr=0.1": 0.9584,
+    "roc_auc": 0.98277232,
+    "num_pairs": 10000.0
+  }
+}

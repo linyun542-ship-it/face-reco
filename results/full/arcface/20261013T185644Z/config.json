@@ -1,0 +1,29 @@
+{
+  "loss": "arcface",
+  "data_root": "/scratch/<user>/datasets/celeba",
+  "manifest_dir": "/scratch/<user>/datasets/celeba/manifests",
+  "image_size": 160,
+  "batch_size": 64,
+  "num_workers": 4,
+  "epochs": 15,
+  "lr": 0.0001,
+  "head_lr": 0.001,
+  "weight_decay": 0.0001,
+  "freeze_backbone_epochs": 1,
+  "pretrained": "vggface2",
+  "embedding_dim": 512,
+  "arcface_s": 64.0,
+  "arcface_m": 0.5,
+  "seed": 42,
+  "device": "cuda",
+  "output_dir": "runs/arcface",
+  "eval_every": 1,
+  "num_pairs": 10000,
+  "fpr_targets": [
+    0.001,
+    0.01,
+    0.1
+  ],
+  "max_identities": null,
+  "max_images_per_identity": null
+}

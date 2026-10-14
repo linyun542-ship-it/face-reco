@@ -25,3 +25,12 @@ results/**
 !results/smoke/
 !results/smoke/**/*.json
 !results/.gitkeep
+!results/full/
+!results/full/**/
+!results/full/**/*.json
+!results/full/**/*.jsonl
+!results/full/*.md
+/logs/
+/.venv-gpu/
+/.venv-publish/
+*.tar.gz
